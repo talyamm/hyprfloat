@@ -13,6 +13,7 @@ with open(CONFIG_PATH) as f:
 WINDOW_CLASSES = config["window_classes"]
 FLOAT_WIDTH = config["float_size"]["width"]
 FLOAT_HEIGHT = config["float_size"]["height"]
+FLOAT_CLOSE = config.get("float_close", True)
 
 def hyprctl(cmd):
     subprocess.run(['hyprctl'] + cmd, capture_output=True)
@@ -23,6 +24,13 @@ def get_windows(workspace_id, class_filter=None):
     if class_filter:
         windows = [w for w in windows if w['class'] == class_filter]
     return windows
+
+def get_client(address):
+    clients = json.loads(subprocess.run(['hyprctl', 'clients', '-j'], capture_output=True, text=True).stdout)
+    for client in clients:
+        if client['address'] == address:
+            return client
+    return None
 
 def get_matching_windows(workspace_id):
     all_matching = []
@@ -58,6 +66,18 @@ with socket(AF_UNIX, SOCK_STREAM) as sock:
                 else:
                     for window in matching_windows:
                         tile_window(window['address'])
+            else:
+                data = event.split('>>')[1].split(',')
+                if len(data) >= 2:
+                    address = f'0x{data[0]}'
+                    workspace_id = int(data[1])
+                    client = get_client(address)
+                    if client and not client.get('floating', False):
+                        all_windows = get_windows(workspace_id)
+                        matching_windows = get_matching_windows(workspace_id)
+                        if len(all_windows) > 1 and len(matching_windows) > 0:
+                            for window in matching_windows:
+                                tile_window(window['address'])
         
         elif event.startswith('closewindow>>'):
             workspace = json.loads(subprocess.run(['hyprctl', 'activeworkspace', '-j'], capture_output=True, text=True).stdout)
@@ -65,5 +85,5 @@ with socket(AF_UNIX, SOCK_STREAM) as sock:
             all_windows = get_windows(workspace_id)
             matching_windows = get_matching_windows(workspace_id)
             
-            if len(all_windows) == 1 and len(matching_windows) == 1:
+            if FLOAT_CLOSE and len(all_windows) == 1 and len(matching_windows) == 1:
                 float_window(matching_windows[0]['address'])
