@@ -1,8 +1,8 @@
 {
-  "window_classes": ["Alacritty"],
-  "float_size": {
-    "width": 1200,
-    "height": 800
-  }
+	"window_classes": ["kitty"],
+	"float_size": {
+		"width": 1200,
+		"height": 800
+	},
+	"float_close": true
 }
-

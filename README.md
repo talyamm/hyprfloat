@@ -19,12 +19,13 @@ exec-once = python ~/.local/share/bin/hyprfloat/hyprfloat.py &
 
 ```bash
 {
-  "window_classes": ["Alacritty"],
-  "float_size": {
-    "width": 1200,
-    "height": 800
-  }
+	"window_classes": ["kitty"],
+	"float_size": {
+		"width": 1200,
+		"height": 800
+	},
+	"float_close": true
 }
 ```
 
-( whole thing uses about 14MB btw)
+( whole thing uses about 14MB btw )
